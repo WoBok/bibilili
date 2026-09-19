@@ -64,8 +64,15 @@ class PlayerViewModel(app: Application) : AndroidViewModel(app) {
         viewModelScope.launch {
             _state.value = _state.value.copy(loading = true, error = null)
             when (val result = container.catalogRepo.season(seasonId, epId)) {
-                is ApiResult.Failure -> _state.value =
-                    _state.value.copy(loading = false, error = "没能加载剧集信息")
+                is ApiResult.Failure -> _state.value = _state.value.copy(
+                    loading = false,
+                    error = when (val e = result.error) {
+                        is com.wobok.bibilili.core.bili.error.BiliError.Api ->
+                            "没能加载剧集信息（${e.code}）"
+                        is com.wobok.bibilili.core.bili.error.BiliError.Network -> "网络不通"
+                        else -> "没能加载剧集信息"
+                    },
+                )
 
                 is ApiResult.Success -> {
                     val season = result.data
@@ -120,8 +127,14 @@ class PlayerViewModel(app: Application) : AndroidViewModel(app) {
             val preferred = container.settings.playback.first().preferredQn
 
             when (val source = container.playbackRepo.localSource(epId, cid, preferred)) {
-                is ApiResult.Failure -> _state.value =
-                    _state.value.copy(loading = false, error = "这一集暂时放不了")
+                is ApiResult.Failure -> _state.value = _state.value.copy(
+                    loading = false,
+                    error = when (val e = source.error) {
+                        is com.wobok.bibilili.core.bili.error.BiliError.Api ->
+                            "这一集放不了（${e.code}）"
+                        else -> "这一集暂时放不了"
+                    },
+                )
 
                 is ApiResult.Success -> {
                     when (val data = source.data) {

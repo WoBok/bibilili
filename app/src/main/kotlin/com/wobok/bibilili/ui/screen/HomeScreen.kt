@@ -57,6 +57,7 @@ fun HomeScreen(
     onOpenSeason: (Long) -> Unit,
     onGoChannel: () -> Unit,
     onGoLogin: () -> Unit,
+    onGoFollowList: () -> Unit,
 ) {
     val continueWatching by historyRepo.observeContinueWatching().collectAsState(emptyList())
     val follows by followRepo.observe().collectAsState(emptyList())
@@ -82,9 +83,9 @@ fun HomeScreen(
         contentPadding = PaddingValues(bottom = 32.dp),
     ) {
         item {
+            // 继续观看没有「全部」可去——本地只留 30 天，列表就是全部
             SectionHeader(
                 title = "继续观看",
-                action = "全部 ›",
                 modifier = Modifier.padding(horizontal = 22.dp, vertical = 14.dp),
             )
         }
@@ -117,6 +118,7 @@ fun HomeScreen(
             SectionHeader(
                 title = "我的收藏",
                 action = "全部 ›",
+                onAction = onGoFollowList,
                 modifier = Modifier.padding(start = 22.dp, end = 22.dp, top = 26.dp, bottom = 12.dp),
             )
         }
@@ -161,6 +163,7 @@ fun HomeScreen(
                 SectionHeader(
                     title = "追番更新",
                     action = "全部 ›",
+                    onAction = onGoFollowList,
                     modifier = Modifier.padding(start = 22.dp, end = 22.dp, top = 26.dp, bottom = 12.dp),
                 )
             }

@@ -37,6 +37,28 @@ object NetworkModule {
         .addInterceptor(WbiInterceptor(wbiKeyProvider))
         .build()
 
+    /** 图片专用：只带必需的两个头，放宽并发，不碰 Cookie 与 WBI。 */
+    fun imageOkHttp(): OkHttpClient = OkHttpClient.Builder()
+        .connectTimeout(20, TimeUnit.SECONDS)
+        .readTimeout(30, TimeUnit.SECONDS)
+        .retryOnConnectionFailure(true)
+        .dispatcher(
+            okhttp3.Dispatcher().apply {
+                maxRequests = 48
+                maxRequestsPerHost = 16
+            }
+        )
+        .connectionPool(okhttp3.ConnectionPool(16, 5, TimeUnit.MINUTES))
+        .addInterceptor { chain ->
+            chain.proceed(
+                chain.request().newBuilder()
+                    .header("User-Agent", BiliHeaderInterceptor.BROWSER_UA)
+                    .header("Referer", BiliHeaderInterceptor.REFERER)
+                    .build()
+            )
+        }
+        .build()
+
     fun retrofit(client: OkHttpClient): Retrofit = Retrofit.Builder()
         .baseUrl(BASE_URL)
         .client(client)

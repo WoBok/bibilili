@@ -21,6 +21,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.windowInsetsPadding
+import com.wobok.bibilili.ui.component.EmptyState
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -115,9 +120,20 @@ private fun PortraitPlayer(
         Modifier
             .fillMaxSize()
             .background(colors.bg)
+            .statusBarsPadding()
     ) {
         Column(Modifier.fillMaxSize()) {
             Surface(state, player, onBack, onToggleControls, onSeekBy, onBoost, onToggleFullscreen)
+
+            // 加载中和失败必须给反馈，否则播放页看上去就是一片空白
+            if (state.error != null) {
+                EmptyState(state.error, actionLabel = "返回") { onBack() }
+                return@Column
+            }
+            if (state.loading && state.title.isBlank()) {
+                EmptyState("正在加载剧集信息")
+                return@Column
+            }
 
             LazyColumn(contentPadding = PaddingValues(bottom = 32.dp)) {
                 item { SynopsisCard(state) { onToggleDetail(true) } }
@@ -560,7 +576,8 @@ private fun FullscreenControls(
     onBack: () -> Unit,
     onOverlay: (PlayerOverlay) -> Unit,
 ) {
-    Box(Modifier.fillMaxSize()) {
+    // 横屏时刘海在左右两侧，控件要避开
+    Box(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing)) {
         Box(
             Modifier
                 .fillMaxWidth()

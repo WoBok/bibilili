@@ -47,7 +47,7 @@ class QrLoginRepository(
                 continue
             }
 
-            val body = response.body()?.data ?: continue
+            val body = response.body()?.payload ?: continue
 
             when (QrPollCode.from(body.code)) {
                 QrPollCode.WAITING_SCAN -> Unit

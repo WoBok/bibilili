@@ -39,7 +39,11 @@ import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
 import com.wobok.bibilili.data.auth.QrLoginRepository
 import com.wobok.bibilili.data.auth.QrLoginState
 import com.wobok.bibilili.ui.theme.PaperTheme
+import android.content.Intent
 import android.graphics.Bitmap
+import android.net.Uri
+import androidx.compose.ui.platform.LocalContext
+import android.widget.Toast
 
 /**
  * 扫码登录。
@@ -63,6 +67,7 @@ fun LoginScreen(
     }
 
     val colors = PaperTheme.colors
+    val context = LocalContext.current
 
     Box(
         Modifier
@@ -112,6 +117,7 @@ fun LoginScreen(
                 )
             }
 
+            // 同机登录：把二维码里的授权地址交给系统，装了官方 App 就会被它接管
             Text(
                 text = "使用哔哩哔哩客户端验证",
                 style = MaterialTheme.typography.titleSmall,
@@ -121,6 +127,18 @@ fun LoginScreen(
                     .width(246.dp)
                     .clip(RoundedCornerShape(10.dp))
                     .background(colors.primary)
+                    .clickable {
+                        val url = (state as? QrLoginState.WaitingScan)?.content
+                        if (url.isNullOrBlank()) {
+                            Toast.makeText(context, "二维码还没就绪", Toast.LENGTH_SHORT).show()
+                        } else {
+                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            runCatching { context.startActivity(intent) }.onFailure {
+                                Toast.makeText(context, "没有能打开它的应用，请用另一台设备扫码", Toast.LENGTH_LONG).show()
+                            }
+                        }
+                    }
                     .padding(vertical = 14.dp),
                 textAlign = androidx.compose.ui.text.style.TextAlign.Center,
             )

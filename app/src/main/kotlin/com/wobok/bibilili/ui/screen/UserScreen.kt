@@ -63,7 +63,7 @@ fun UserScreen(
     LaunchedEffect(Unit) {
         val mid = container.credentialStore.current.value?.dedeUserId ?: return@LaunchedEffect
 
-        runCatching { container.authApi.nav() }.getOrNull()?.data?.let { nav ->
+        runCatching { container.authApi.nav() }.getOrNull()?.payload?.let { nav ->
             val daysLeft = nav.vip?.dueDate
                 ?.takeIf { it > 0 }
                 ?.let { ((it - System.currentTimeMillis()) / 86_400_000L).toInt().coerceAtLeast(0) }
@@ -78,11 +78,11 @@ fun UserScreen(
         }
 
         // 一次请求同时拿到追番数与追剧数，不需要 WBI，也不用翻列表
-        runCatching { container.biliApi.navNum(mid) }.getOrNull()?.data?.let {
+        runCatching { container.biliApi.navNum(mid) }.getOrNull()?.payload?.let {
             stats = stats.copy(bangumi = it.bangumi, cinema = it.cinema)
         }
 
-        runCatching { container.biliApi.spaceInfo(mid) }.getOrNull()?.data?.let {
+        runCatching { container.biliApi.spaceInfo(mid) }.getOrNull()?.payload?.let {
             stats = stats.copy(sign = it.sign)
         }
 

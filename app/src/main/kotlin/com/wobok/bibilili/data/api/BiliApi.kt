@@ -119,6 +119,15 @@ interface BiliApi {
         @Query("fourk") fourk: Int = 1,
     ): PlayUrlDto
 
+    /**
+     * 官方频道页模块（运营位）。
+     *
+     * 这个接口没有公开文档，返回结构靠实测。取不到就整行不显示，
+     * 不让它影响页面其余部分。
+     */
+    @GET("pgc/page/cinema/tab")
+    suspend fun cinemaTab(@Query("name") name: String): BiliResponse<CinemaTabDto>
+
     // ---- 搜索 ----
 
     /**

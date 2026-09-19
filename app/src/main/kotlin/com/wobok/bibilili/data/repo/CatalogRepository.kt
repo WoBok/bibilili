@@ -30,6 +30,19 @@ data class ChannelEntry(
 
 class CatalogRepository(private val api: BiliApi) {
 
+    /** 官方运营入口。拿不到就返回空，调用方据此隐藏整行。 */
+    suspend fun officialEntries(name: String): List<Pair<String, String>> =
+        runCatching {
+            val body = api.cinemaTab(name)
+            if (body.code != 0) return emptyList()
+            body.payload?.modules
+                ?.flatMap { it.items }
+                ?.filter { it.title.isNotBlank() && it.link.isNotBlank() }
+                ?.map { it.title to it.link }
+                ?.take(10)
+                .orEmpty()
+        }.getOrDefault(emptyList())
+
     fun entriesFor(seasonType: Int): List<ChannelEntry> = listOf(
         ChannelEntry("rank", "排行榜", ChannelEntry.Kind.RANK),
         ChannelEntry("score", "高分", ChannelEntry.Kind.HIGH_SCORE),

@@ -37,12 +37,22 @@ class AppContainer(context: Context) {
     private val wbiKeyProvider = CachedWbiKeyProvider(
         settings = settings,
         navFetcher = {
-            val nav = runCatching { authApi.nav() }.getOrNull()?.data?.wbiImg
+            val nav = runCatching { authApi.nav() }.getOrNull()?.payload?.wbiImg
             if (nav == null || nav.imgUrl.isBlank()) null else nav.imgUrl to nav.subUrl
         },
     )
 
     val okHttpClient = NetworkModule.okHttp(credentialStore, wbiKeyProvider)
+
+    /**
+     * 图片单独一个客户端。
+     *
+     * 早先和接口层共用一个 OkHttp，结果封面大面积加载不出来：接口客户端上挂着
+     * Cookie 拦截器和会 runBlocking 读 DataStore 的 WBI 拦截器，首屏几十张图并发
+     * 打进去，连接池和调度线程都被拖住，超时的就再也不重试了。
+     * 图片只需要 Referer 和浏览器 UA，别的都是负担。
+     */
+    val imageOkHttpClient = NetworkModule.imageOkHttp()
     private val retrofit = NetworkModule.retrofit(okHttpClient)
 
     val biliApi: BiliApi = NetworkModule.biliApi(retrofit)

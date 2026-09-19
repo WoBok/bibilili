@@ -333,3 +333,24 @@ data class MediaScoreDto(
     @SerialName("score") val score: Double = 0.0,
     @SerialName("user_count") val userCount: Int = 0,
 )
+
+// ---------------- 官方运营入口 ----------------
+
+@Serializable
+data class CinemaTabDto(
+    @SerialName("modules") val modules: List<CinemaModuleDto> = emptyList(),
+)
+
+@Serializable
+data class CinemaModuleDto(
+    @SerialName("style") val style: String = "",
+    @SerialName("module_id") val moduleId: Long = 0,
+    @SerialName("items") val items: List<CinemaItemDto> = emptyList(),
+)
+
+@Serializable
+data class CinemaItemDto(
+    @SerialName("title") val title: String = "",
+    @SerialName("link") val link: String = "",
+    @SerialName("cover") val cover: String = "",
+)
