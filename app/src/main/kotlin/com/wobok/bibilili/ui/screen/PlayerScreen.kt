@@ -126,8 +126,9 @@ private fun PortraitPlayer(
             Surface(state, player, onBack, onToggleControls, onSeekBy, onBoost, onToggleFullscreen)
 
             // 加载中和失败必须给反馈，否则播放页看上去就是一片空白
-            if (state.error != null) {
-                EmptyState(state.error, actionLabel = "返回") { onBack() }
+            val error = state.error
+            if (error != null) {
+                EmptyState(error, actionLabel = "返回") { onBack() }
                 return@Column
             }
             if (state.loading && state.title.isBlank()) {

@@ -28,7 +28,19 @@ jobs:
         run: gradle :core-bili:test --no-daemon --stacktrace
 
       - name: 打 Debug APK
-        run: gradle :app:assembleDebug --no-daemon --stacktrace
+        id: build
+        run: |
+          set -o pipefail
+          gradle :app:assembleDebug --no-daemon 2>&1 | tee build.log
+
+      # 失败时 Gradle 的栈会把编译错误刷出屏幕，这里单独把它们捞出来
+      - name: 编译错误摘要
+        if: failure()
+        run: |
+          echo "===== Kotlin 编译错误 ====="
+          grep -E "^e: |^w: .*error" build.log | sed "s|file://$GITHUB_WORKSPACE/||" || echo "（没有匹配到 e: 开头的行）"
+          echo "===== 其它失败线索 ====="
+          grep -E "FAILED|What went wrong|Could not|Unresolved|error:" build.log | head -40 || true
 
       - name: 上传 APK
         uses: actions/upload-artifact@v4
