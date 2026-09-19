@@ -4,7 +4,6 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
-    alias(libs.plugins.hilt)
 }
 
 android {
@@ -63,10 +62,6 @@ dependencies {
 
     implementation(libs.androidx.navigation.compose)
 
-    implementation(libs.hilt.android)
-    implementation(libs.hilt.navigation.compose)
-    ksp(libs.hilt.compiler)
-
     implementation(libs.retrofit)
     implementation(libs.retrofit.serialization)
     implementation(libs.okhttp)
@@ -75,7 +70,6 @@ dependencies {
 
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
-    implementation(libs.room.paging)
     ksp(libs.room.compiler)
 
     implementation(libs.datastore.preferences)
@@ -84,16 +78,12 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
 
-    implementation(libs.paging.runtime)
-    implementation(libs.paging.compose)
-
     implementation(libs.media3.exoplayer)
     implementation(libs.media3.exoplayer.dash)
     implementation(libs.media3.ui)
     implementation(libs.media3.session)
 
     implementation(libs.zxing.core)
-    implementation(libs.jupnp)
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlin.test.junit)
