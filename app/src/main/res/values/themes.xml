@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 真正的配色在 Compose 里，这里只保留启动窗口需要的最小集。 -->
+    <style name="Theme.Bibilili" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">#FBF9F4</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+    </style>
+</resources>
