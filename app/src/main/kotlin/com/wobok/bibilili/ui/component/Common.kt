@@ -223,9 +223,9 @@ fun PaperChip(
 @Composable
 fun EmptyState(
     message: String,
+    modifier: Modifier = Modifier,
     actionLabel: String? = null,
     onAction: (() -> Unit)? = null,
-    modifier: Modifier = Modifier,
 ) {
     Column(
         modifier

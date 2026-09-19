@@ -138,7 +138,7 @@ fun ChannelScreen(
 
         when {
             loading -> EmptyState("正在加载")
-            failed -> EmptyState("没能加载内容", "重试") { entryIndex = entryIndex }
+            failed -> EmptyState("没能加载内容", actionLabel = "重试") { entryIndex = entryIndex }
             cards.isEmpty() -> EmptyState("这里还没有内容")
             else -> LazyVerticalGrid(
                 columns = GridCells.Fixed(3),

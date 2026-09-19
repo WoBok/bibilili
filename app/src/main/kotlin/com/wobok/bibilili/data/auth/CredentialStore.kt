@@ -8,16 +8,13 @@ import com.wobok.bibilili.core.bili.auth.Credentials
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import javax.inject.Inject
-import javax.inject.Singleton
 
 /**
  * 凭证落盘。用 [EncryptedSharedPreferences]，密钥进 Android Keystore。
  *
  * 刻意不用 DataStore：DataStore 没有官方加密方案，而这里存的是能直接登录账号的东西。
  */
-@Singleton
-class CredentialStore @Inject constructor(
+class CredentialStore(
     private val context: Context,
 ) {
     private val prefs: SharedPreferences by lazy {

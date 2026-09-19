@@ -91,11 +91,11 @@ fun HomeScreen(
 
         item {
             when {
-                !loggedIn -> EmptyState("登录后显示你的观看记录", "去登录", onGoLogin)
+                !loggedIn -> EmptyState("登录后显示你的观看记录", actionLabel = "去登录", onAction = onGoLogin)
                 continueWatching.isEmpty() && syncError > 0 ->
-                    EmptyState("没能加载观看记录", "重试") { syncError = 0 }
+                    EmptyState("没能加载观看记录", actionLabel = "重试") { syncError = 0 }
                 continueWatching.isEmpty() ->
-                    EmptyState("最近 30 天没有看过影视或番剧", "去影视看看", onGoChannel)
+                    EmptyState("最近 30 天没有看过影视或番剧", actionLabel = "去影视看看", onAction = onGoChannel)
                 else -> LazyRow(
                     contentPadding = PaddingValues(horizontal = 22.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),

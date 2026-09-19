@@ -32,6 +32,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -766,8 +767,9 @@ private fun SpeedPanel(state: PlayerUiState, onSelect: (Float) -> Unit) {
 
 @Composable
 private fun QualityPanel(state: PlayerUiState, onSelect: (Int) -> Unit) {
-    val options = remember(state.availableQn) {
-        state.availableQn.mapNotNull(PlayQuality::from).ifEmpty { PlayQuality.forLocalPlayback() }
+    val options: List<PlayQuality> = remember(state.availableQn) {
+        val mapped = state.availableQn.mapNotNull { qn -> PlayQuality.from(qn) }
+        mapped.ifEmpty { PlayQuality.forLocalPlayback() }
     }
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         options.forEach { quality ->

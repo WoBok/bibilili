@@ -6,8 +6,6 @@ import com.wobok.bibilili.data.network.runApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import javax.inject.Inject
-import javax.inject.Singleton
 
 /**
  * 扫码登录全流程。
@@ -15,8 +13,7 @@ import javax.inject.Singleton
  * 发出一条状态流：等待扫描 → 已扫描待确认 → 成功 / 过期。
  * UI 只需要渲染状态，不关心轮询。
  */
-@Singleton
-class QrLoginRepository @Inject constructor(
+class QrLoginRepository(
     private val api: AuthApi,
     private val store: CredentialStore,
 ) {
@@ -67,7 +64,7 @@ class QrLoginRepository @Inject constructor(
 
                 QrPollCode.SUCCESS -> {
                     // 凭证在响应头的 Set-Cookie 里，不在 body。
-                    val credentials = parseCredentials(response.headers("Set-Cookie"))
+                    val credentials = parseCredentials(response.headers().values("Set-Cookie"))
                     if (credentials == null) {
                         emit(QrLoginState.Failed("登录成功但没取到凭证"))
                     } else {

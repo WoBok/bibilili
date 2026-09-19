@@ -18,6 +18,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -96,7 +100,7 @@ private fun PlayerRoute(seasonId: Long, onBack: () -> Unit) {
     val vm: PlayerViewModel = viewModel()
     val state by vm.state.collectAsState()
 
-    androidx.compose.runtime.LaunchedEffect(seasonId) {
+    LaunchedEffect(seasonId) {
         if (seasonId > 0) vm.load(seasonId = seasonId, epId = null)
     }
 
@@ -129,7 +133,7 @@ private fun MainTabs(
     onGoUser: () -> Unit,
     onGoLogin: () -> Unit,
 ) {
-    var tab by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(Tab.Home) }
+    var tab by remember { mutableStateOf(Tab.Home) }
     val colors = PaperTheme.colors
 
     Column(

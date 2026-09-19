@@ -3,7 +3,6 @@ package com.wobok.bibilili.data.network
 import com.wobok.bibilili.data.auth.CredentialStore
 import okhttp3.Interceptor
 import okhttp3.Response
-import javax.inject.Inject
 
 /**
  * 把已保存的凭证挂到每个请求上。
@@ -11,7 +10,7 @@ import javax.inject.Inject
  * 未登录时仍然发出请求——接口会返回 `-101`，由 UI 层引导去登录，
  * 比在这里拦截更好排查。
  */
-class CookieInterceptor @Inject constructor(
+class CookieInterceptor(
     private val store: CredentialStore,
 ) : Interceptor {
 
