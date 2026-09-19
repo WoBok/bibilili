@@ -22,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -78,6 +79,9 @@ fun PosterCard(
             AsyncImage(
                 model = cover,
                 contentDescription = title,
+                // 海报的比例和格子并不总是一致，默认的 Fit 会在上下留白，
+                // 看上去就是「封面没占满格子」。一律裁切填满。
+                contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize(),
             )
             if (score.isNotBlank()) {
@@ -153,7 +157,12 @@ fun ContinueCard(
                 .height(118.dp)
                 .background(PaperTheme.colors.surface2)
         ) {
-            AsyncImage(model = cover, contentDescription = title, modifier = Modifier.fillMaxSize())
+            AsyncImage(
+                model = cover,
+                contentDescription = title,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize(),
+            )
             Box(
                 Modifier
                     .align(Alignment.BottomStart)
@@ -217,7 +226,9 @@ fun PaperChip(
 }
 
 /**
- * 空态：细线插画位 + 一行文案 + 一个操作。
+ * 空态：一行文案 + 一个操作。
+ *
+ * 原先文案上方有个细线方框当插画位，实际看上去就是「凭空多出来一个框」，去掉了。
  * 「继续观看」为空是允许的，给个简洁提示就好。
  */
 @Composable
@@ -232,13 +243,8 @@ fun EmptyState(
             .fillMaxWidth()
             .padding(vertical = 44.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
-        Box(
-            Modifier
-                .size(46.dp)
-                .border(BorderStroke(1.dp, PaperTheme.colors.outline2), RoundedCornerShape(12.dp))
-        )
         Text(
             text = message,
             style = MaterialTheme.typography.bodyMedium,

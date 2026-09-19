@@ -61,7 +61,7 @@ class CatalogRepository(private val api: BiliApi) {
                 MediaCard(
                     seasonId = it.seasonId,
                     title = it.title,
-                    cover = it.cover,
+                    cover = it.cover.asHttps(),
                     subtitle = it.newEp?.indexShow.orEmpty(),
                     score = it.rating,
                     badge = it.badge,
@@ -82,7 +82,7 @@ class CatalogRepository(private val api: BiliApi) {
                     MediaCard(
                         seasonId = it.seasonId,
                         title = it.title,
-                        cover = it.cover,
+                        cover = it.cover.asHttps(),
                         subtitle = it.indexShow,
                         score = it.order.takeIf { s -> s.endsWith("分") }.orEmpty(),
                         badge = it.badge,
@@ -115,7 +115,7 @@ class CatalogRepository(private val api: BiliApi) {
                 MediaCard(
                     seasonId = it.seasonId,
                     title = it.title.stripHighlight(),
-                    cover = it.cover.fixProtocol(),
+                    cover = it.cover.asHttps(),
                     subtitle = listOf(it.seasonTypeName, it.areas, it.indexShow)
                         .filter(String::isNotBlank).joinToString(" · "),
                     score = it.mediaScore?.score?.takeIf { s -> s > 0 }?.toString().orEmpty(),
@@ -134,7 +134,3 @@ class CatalogRepository(private val api: BiliApi) {
 /** 搜索结果的标题带 `<em class="keyword">` 高亮标签，展示前要去掉。 */
 internal fun String.stripHighlight(): String =
     replace(Regex("</?em[^>]*>"), "")
-
-/** 部分封面地址是 `//i0.hdslb.com/...` 的协议相对写法。 */
-internal fun String.fixProtocol(): String =
-    if (startsWith("//")) "https:$this" else this

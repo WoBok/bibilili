@@ -31,7 +31,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
+import androidx.compose.ui.layout.ContentScale
 import com.wobok.bibilili.AppContainer
+import com.wobok.bibilili.data.repo.asHttps
 import com.wobok.bibilili.ui.theme.PaperTheme
 import kotlinx.coroutines.launch
 
@@ -70,7 +72,7 @@ fun UserScreen(
                 ?: 0
             stats = stats.copy(
                 name = nav.uname,
-                face = nav.face,
+                face = nav.face.asHttps(),
                 isVip = nav.vipStatus == 1,
                 level = nav.levelInfo?.currentLevel ?: 0,
                 vipDaysLeft = daysLeft,
@@ -102,8 +104,9 @@ fun UserScreen(
         AsyncImage(
             model = stats.face,
             contentDescription = stats.name,
+            contentScale = ContentScale.Crop,
             modifier = Modifier
-                .padding(top = 74.dp)
+                .padding(top = 58.dp)
                 .size(112.dp)
                 .clip(CircleShape)
                 .background(colors.surface2),
@@ -121,14 +124,16 @@ fun UserScreen(
                 color = colors.onBg,
             )
             if (stats.isVip) {
+                // 角标做小：原来上下各 3dp、左右各 8dp 的内边距把三个字撑成了一块砖
                 Text(
                     text = "大会员",
-                    fontSize = 9.5f.sp,
+                    fontSize = 8.5f.sp,
+                    fontWeight = FontWeight.Bold,
                     color = colors.bg,
                     modifier = Modifier
-                        .clip(RoundedCornerShape(4.dp))
+                        .clip(RoundedCornerShape(3.dp))
                         .background(colors.accent)
-                        .padding(horizontal = 8.dp, vertical = 3.dp),
+                        .padding(horizontal = 5.dp, vertical = 1.5f.dp),
                 )
             }
         }
@@ -145,7 +150,7 @@ fun UserScreen(
 
         Box(
             Modifier
-                .padding(top = 22.dp)
+                .padding(top = 18.dp)
                 .width(26.dp)
                 .height(2.dp)
                 .background(colors.accent)
@@ -153,11 +158,11 @@ fun UserScreen(
 
         Column(
             Modifier
-                .padding(top = 28.dp)
+                .padding(top = 22.dp)
                 .width(294.dp)
                 .clip(RoundedCornerShape(12.dp))
                 .background(colors.surface)
-                .padding(vertical = 8.dp)
+                .padding(vertical = 4.dp)
         ) {
             Row(Modifier.fillMaxWidth()) {
                 StatCell("追番", stats.bangumi.toString(), "部", Modifier.weight(1f), false)
@@ -167,21 +172,12 @@ fun UserScreen(
                 StatCell("近 90 天看过", stats.watchedCount.toString(), "部", Modifier.weight(1f), true)
                 StatCell("近 90 天观看", stats.watchedHours.toString(), "小时", Modifier.weight(1f), true)
             }
-            Text(
-                text = "下两项按本机观看记录统计",
-                fontSize = 9.5f.sp,
-                color = colors.onBg3,
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 11.dp),
-            )
         }
 
         if (stats.sign.isNotBlank()) {
             Column(
                 Modifier
-                    .padding(top = 16.dp)
+                    .padding(top = 14.dp)
                     .width(294.dp)
                     .clip(RoundedCornerShape(12.dp))
                     .background(colors.surface)
@@ -205,7 +201,7 @@ fun UserScreen(
             color = colors.accent,
             textAlign = TextAlign.Center,
             modifier = Modifier
-                .padding(bottom = 64.dp)
+                .padding(top = 30.dp, bottom = 52.dp)
                 .width(294.dp)
                 .clip(RoundedCornerShape(10.dp))
                 .border(1.dp, colors.accent, RoundedCornerShape(10.dp))

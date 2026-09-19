@@ -8,6 +8,7 @@ import com.wobok.bibilili.data.api.BiliApi
 import com.wobok.bibilili.data.api.HistoryItemDto
 import com.wobok.bibilili.data.local.HistoryDao
 import com.wobok.bibilili.data.local.HistoryEntity
+import com.wobok.bibilili.data.auth.CredentialStore
 import com.wobok.bibilili.data.local.SettingsStore
 import com.wobok.bibilili.data.network.runApi
 import kotlinx.coroutines.delay
@@ -25,7 +26,63 @@ class HistoryRepository(
     private val api: BiliApi,
     private val dao: HistoryDao,
     private val settings: SettingsStore,
+    private val credentials: CredentialStore,
 ) {
+
+    /** 全部本地记录，按时间倒序。 */
+    fun observeAll(): Flow<List<PgcHistoryEntry>> =
+        dao.observeAll().map { rows -> rows.map(HistoryEntity::toDomain) }
+
+    /** 这部剧上次看到哪。没有记录返回 null。 */
+    suspend fun resumePoint(seasonId: Long): PgcHistoryEntry? =
+        dao.find(seasonId)?.toDomain()
+
+    /**
+     * 记一次观看。
+     *
+     * 本地先写，界面立刻能看到「继续观看」多一条；再上报给服务端，
+     * 让官方 App 与网页端的最近观看也对得上。上报失败不影响本地，
+     * 因为本地这份才是这个 App 自己要用的。
+     */
+    suspend fun record(
+        seasonId: Long,
+        epId: Long,
+        cid: Long,
+        aid: Long,
+        title: String,
+        episodeTitle: String,
+        cover: String,
+        progressSeconds: Int,
+        durationSeconds: Int,
+    ) {
+        if (seasonId <= 0) return
+        dao.upsert(
+            HistoryEntity(
+                seasonId = seasonId,
+                epId = epId,
+                cid = cid,
+                title = title,
+                episodeTitle = episodeTitle,
+                cover = cover.asHttps(),
+                viewAt = System.currentTimeMillis() / 1000,
+                progressSeconds = progressSeconds,
+                durationSeconds = durationSeconds,
+            )
+        )
+
+        val csrf = credentials.current.value?.biliJct.orEmpty()
+        if (csrf.isBlank() || aid <= 0 || cid <= 0) return
+        runCatching {
+            api.reportProgress(
+                aid = aid,
+                cid = cid,
+                epId = epId,
+                seasonId = seasonId,
+                progress = progressSeconds.toLong(),
+                csrf = csrf,
+            )
+        }
+    }
 
     fun observeContinueWatching(limit: Int = 8): Flow<List<PgcHistoryEntry>> =
         dao.observeRecent(limit * 3).map { rows ->
@@ -39,11 +96,12 @@ class HistoryRepository(
      * 一页 20 条里可能一条剧集都没有，看内容会导致同步提前中断。
      */
     suspend fun sync(): ApiResult<Int> {
-        val localNewest = dao.newestViewAt()
+        val localNewest = settings.lastHistorySyncViewAt.first().takeIf { it > 0 }
         var max = 0L
         var viewAt = 0L
         var pages = 0
         var written = 0
+        var newestSeen = 0L
 
         while (true) {
             val result = runApi { api.historyCursor(max = max, viewAt = viewAt) }
@@ -52,6 +110,7 @@ class HistoryRepository(
                 is ApiResult.Success -> result.data
             }
             pages++
+            page.list.maxOfOrNull(HistoryItemDto::viewAt)?.let { newestSeen = maxOf(newestSeen, it) }
 
             val pgc = page.list
                 .filter { HistoryBusiness.from(it.history.business) == HistoryBusiness.PGC }
@@ -79,6 +138,7 @@ class HistoryRepository(
             delay(HistorySyncPlanner.PAGE_DELAY_MILLIS)
         }
 
+        if (newestSeen > 0) settings.setLastHistorySyncViewAt(newestSeen)
         maybePurge()
         return ApiResult.Success(written)
     }
@@ -110,7 +170,7 @@ private fun HistoryItemDto.toEntity() = HistoryEntity(
     cid = history.cid,
     title = title,
     episodeTitle = showTitle,
-    cover = cover,
+    cover = bestCover().asHttps(),
     viewAt = viewAt,
     progressSeconds = progress,
     durationSeconds = duration,

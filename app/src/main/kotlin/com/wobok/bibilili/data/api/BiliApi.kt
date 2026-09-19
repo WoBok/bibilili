@@ -2,8 +2,11 @@ package com.wobok.bibilili.data.api
 
 import com.wobok.bibilili.data.network.BiliResponse
 import com.wobok.bibilili.data.network.WbiInterceptor
+import retrofit2.http.Field
+import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
 import retrofit2.http.Headers
+import retrofit2.http.POST
 import retrofit2.http.Query
 
 /**
@@ -127,6 +130,55 @@ interface BiliApi {
      */
     @GET("pgc/page/cinema/tab")
     suspend fun cinemaTab(@Query("name") name: String): BiliResponse<CinemaTabDto>
+
+    /**
+     * 进度条小窗预览用的雪碧图索引。
+     * 这个接口不需要登录，拿不到就只是没有预览图，不影响拖动。
+     */
+    @GET("x/player/videoshot")
+    suspend fun videoShot(
+        @Query("aid") aid: Long,
+        @Query("cid") cid: Long,
+        @Query("index") index: Int = 1,
+    ): BiliResponse<VideoShotDto>
+
+    // ---- 写操作：都要 bili_jct 作 csrf ----
+
+    /**
+     * 上报播放进度。
+     *
+     * 本地 Room 只是给自己看的缓存，**真正让「最近观看」在所有端都对得上的是这个**：
+     * 不上报的话，官方 App 和网页端都不会知道你在这里看过。
+     */
+    @FormUrlEncoded
+    @POST("x/v2/history/report")
+    suspend fun reportProgress(
+        @Field("aid") aid: Long,
+        @Field("cid") cid: Long,
+        @Field("epid") epId: Long,
+        @Field("sid") seasonId: Long,
+        /** 已观看秒数；-1 表示看完。 */
+        @Field("progress") progress: Long,
+        /** PGC 固定 4。 */
+        @Field("type") type: Int = 4,
+        @Field("sub_type") subType: Int = 1,
+        @Field("dt") dt: Int = 2,
+        @Field("csrf") csrf: String,
+    ): BiliResponse<EmptyDto>
+
+    @FormUrlEncoded
+    @POST("pgc/web/follow/add")
+    suspend fun followAdd(
+        @Field("season_id") seasonId: Long,
+        @Field("csrf") csrf: String,
+    ): BiliResponse<EmptyDto>
+
+    @FormUrlEncoded
+    @POST("pgc/web/follow/del")
+    suspend fun followDel(
+        @Field("season_id") seasonId: Long,
+        @Field("csrf") csrf: String,
+    ): BiliResponse<EmptyDto>
 
     // ---- 搜索 ----
 

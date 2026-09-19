@@ -22,13 +22,21 @@ data class CursorDto(
 data class HistoryItemDto(
     @SerialName("title") val title: String = "",
     @SerialName("cover") val cover: String = "",
+    /**
+     * 剧集类的条目封面常常不在 `cover` 而在 `covers[0]`，`cover` 反倒是空串。
+     * 两个都看，谁有值用谁——否则「继续观看」整排都是空白卡片。
+     */
+    @SerialName("covers") val covers: List<String> = emptyList(),
     @SerialName("history") val history: HistoryRefDto = HistoryRefDto(),
     @SerialName("videos") val videos: Int = 0,
     @SerialName("show_title") val showTitle: String = "",
     @SerialName("duration") val duration: Int = 0,
     @SerialName("progress") val progress: Int = 0,
     @SerialName("view_at") val viewAt: Long = 0,
-)
+) {
+    fun bestCover(): String =
+        cover.ifBlank { covers.firstOrNull { it.isNotBlank() }.orEmpty() }
+}
 
 @Serializable
 data class HistoryRefDto(
@@ -178,6 +186,16 @@ data class SeasonStatDto(
 @Serializable
 data class UserStatusDto(
     @SerialName("follow") val follow: Int = 0,
+    /** 服务端记的续播点，比本地库准——换设备也对得上。 */
+    @SerialName("progress") val progress: SeasonProgressDto? = null,
+)
+
+@Serializable
+data class SeasonProgressDto(
+    @SerialName("last_ep_id") val lastEpId: Long = 0,
+    @SerialName("last_ep_index") val lastEpIndex: String = "",
+    /** 已观看秒数。 */
+    @SerialName("last_time") val lastTime: Long = 0,
 )
 
 @Serializable
@@ -354,3 +372,26 @@ data class CinemaItemDto(
     @SerialName("link") val link: String = "",
     @SerialName("cover") val cover: String = "",
 )
+
+
+// ---------------- 进度条小窗预览 ----------------
+
+/**
+ * `x/player/videoshot` 返回的是若干张**雪碧图**：每张按 `img_x_len × img_y_len`
+ * 切成小格，`index[i]` 是第 i 格对应的秒数。拖进度条时按秒数反查格子，
+ * 从整图里裁一块画出来，不需要逐帧请求。
+ */
+@Serializable
+data class VideoShotDto(
+    @SerialName("image") val image: List<String> = emptyList(),
+    @SerialName("index") val index: List<Int> = emptyList(),
+    @SerialName("img_x_len") val xLen: Int = 0,
+    @SerialName("img_y_len") val yLen: Int = 0,
+    @SerialName("img_x_size") val xSize: Int = 0,
+    @SerialName("img_y_size") val ySize: Int = 0,
+)
+
+// ---------------- 写操作的通用回包 ----------------
+
+@Serializable
+class EmptyDto

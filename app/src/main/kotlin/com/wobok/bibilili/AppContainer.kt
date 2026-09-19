@@ -59,7 +59,7 @@ class AppContainer(context: Context) {
     val authApi: AuthApi = NetworkModule.authApi(retrofit)
 
     val qrLogin = QrLoginRepository(authApi, credentialStore)
-    val historyRepo = HistoryRepository(biliApi, database.historyDao(), settings)
+    val historyRepo = HistoryRepository(biliApi, database.historyDao(), settings, credentialStore)
     val followRepo = FollowRepository(biliApi, database.followDao(), credentialStore)
     val catalogRepo = CatalogRepository(biliApi)
     val playbackRepo = PlaybackRepository(biliApi, appContext.cacheDir)

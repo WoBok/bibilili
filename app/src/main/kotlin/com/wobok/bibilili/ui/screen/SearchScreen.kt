@@ -32,6 +32,7 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.layout.ContentScale
 import coil3.compose.AsyncImage
 import com.wobok.bibilili.core.bili.error.ApiResult
 import com.wobok.bibilili.data.repo.CatalogRepository
@@ -138,7 +139,8 @@ fun SearchScreen(
         )
 
         when {
-            keyword.isBlank() -> EmptyState("搜点什么")
+            // 还没输入就什么都不画。一句「搜点什么」既没信息量，又把视线往下拽
+            keyword.isBlank() -> Unit
             loading -> EmptyState("正在搜索")
             results.isEmpty() -> EmptyState("没有找到相关影视或番剧")
             else -> LazyColumn(
@@ -165,6 +167,7 @@ private fun SearchRow(card: MediaCard, onClick: () -> Unit) {
         AsyncImage(
             model = card.cover,
             contentDescription = card.title,
+            contentScale = ContentScale.Crop,
             modifier = Modifier
                 .size(width = 84.dp, height = 118.dp)
                 .clip(RoundedCornerShape(12.dp))

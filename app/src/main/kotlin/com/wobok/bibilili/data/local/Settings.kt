@@ -48,6 +48,16 @@ class SettingsStore(private val context: Context) {
         }
 
     /** 上次清理本地历史的时间，用来实现「7 天检查一次」。 */
+    /**
+     * 上一次增量同步追到的最新 view_at。
+     *
+     * 不能再用「本地库里最新的一条」当水位线：本机播放会立刻往库里写一条 `now`，
+     * 下次同步第一页就判定「已经追上」，直接停在原地，别的设备上看的就再也同步不过来了。
+     */
+    val lastHistorySyncViewAt: Flow<Long> = context.dataStore.data.map { it[LAST_SYNC_VIEW_AT] ?: 0L }
+    suspend fun setLastHistorySyncViewAt(seconds: Long) =
+        context.dataStore.edit { it[LAST_SYNC_VIEW_AT] = seconds }
+
     val lastPurgeAt: Flow<Long> = context.dataStore.data.map { it[LAST_PURGE] ?: 0L }
     suspend fun setLastPurgeAt(millis: Long) = context.dataStore.edit { it[LAST_PURGE] = millis }
 
@@ -63,5 +73,6 @@ class SettingsStore(private val context: Context) {
         val WBI_SUB = stringPreferencesKey("wbi_sub")
         val WBI_AT = longPreferencesKey("wbi_at")
         val LAST_PURGE = longPreferencesKey("last_purge_at")
+        val LAST_SYNC_VIEW_AT = longPreferencesKey("last_history_sync_view_at")
     }
 }

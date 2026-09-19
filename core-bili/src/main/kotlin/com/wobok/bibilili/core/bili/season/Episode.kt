@@ -12,12 +12,30 @@ data class Episode(
     val durationMillis: Long,
     val needsVip: Boolean,
 ) {
-    /** 「03 风蚀」；长标题为空时退化成「第 3 集」。 */
+    /** 短标题是不是纯集数。电影的分段常常直接把片名放在这里。 */
+    private val shortIsNumber: Boolean
+        get() = shortTitle.isNotBlank() && shortTitle.all(Char::isDigit)
+
+    /**
+     * 「03 风蚀」。
+     *
+     * 短标题不是数字时**原样用**——电影特辑的 `title` 可能是「地球最后的导演」，
+     * 硬套「第 N 集」会出现「第 地球最后的导演 集」这种句子。
+     */
     fun displayTitle(): String = when {
         longTitle.isNotBlank() && shortTitle.isNotBlank() -> "$shortTitle $longTitle"
         longTitle.isNotBlank() -> longTitle
-        shortTitle.isNotBlank() -> "第 $shortTitle 集"
+        shortIsNumber -> "第 $shortTitle 集"
+        shortTitle.isNotBlank() -> shortTitle
         else -> "第 ? 集"
+    }
+
+    /** 选集九宫格里的一格，位置很窄，能用数字就用数字。 */
+    fun gridLabel(): String = when {
+        shortIsNumber -> shortTitle
+        shortTitle.isNotBlank() -> shortTitle
+        longTitle.isNotBlank() -> longTitle
+        else -> "?"
     }
 }
 

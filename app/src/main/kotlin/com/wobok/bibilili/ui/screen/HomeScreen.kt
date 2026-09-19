@@ -29,6 +29,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
@@ -57,6 +58,7 @@ fun HomeScreen(
     onOpenSeason: (Long) -> Unit,
     onGoChannel: () -> Unit,
     onGoLogin: () -> Unit,
+    onGoHistory: () -> Unit,
     onGoFollowList: () -> Unit,
 ) {
     val continueWatching by historyRepo.observeContinueWatching().collectAsState(emptyList())
@@ -83,9 +85,10 @@ fun HomeScreen(
         contentPadding = PaddingValues(bottom = 32.dp),
     ) {
         item {
-            // 继续观看没有「全部」可去——本地只留 30 天，列表就是全部
             SectionHeader(
                 title = "继续观看",
+                action = "全部 ›",
+                onAction = onGoHistory,
                 modifier = Modifier.padding(horizontal = 22.dp, vertical = 14.dp),
             )
         }
@@ -197,6 +200,7 @@ private fun UpdateRow(item: FollowEntity, onClick: () -> Unit) {
         AsyncImage(
             model = item.cover,
             contentDescription = item.title,
+            contentScale = ContentScale.Crop,
             modifier = Modifier
                 .size(width = 44.dp, height = 62.dp)
                 .clip(RoundedCornerShape(8.dp))

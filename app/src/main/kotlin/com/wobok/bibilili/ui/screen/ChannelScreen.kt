@@ -23,6 +23,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.foundation.layout.size
+import androidx.compose.ui.layout.ContentScale
 import coil3.compose.AsyncImage
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
@@ -46,6 +47,7 @@ import com.wobok.bibilili.data.local.FollowEntity
 import com.wobok.bibilili.data.repo.CatalogRepository
 import com.wobok.bibilili.data.repo.ChannelEntry
 import com.wobok.bibilili.data.repo.MediaCard
+import com.wobok.bibilili.data.repo.asHttps
 import com.wobok.bibilili.ui.component.EmptyState
 import com.wobok.bibilili.ui.component.PaperChip
 import com.wobok.bibilili.ui.component.PosterCard
@@ -299,8 +301,9 @@ private fun TimelineList(days: List<TimelineDayDto>, onOpenSeason: (Long) -> Uni
                                 modifier = Modifier.width(42.dp),
                             )
                             AsyncImage(
-                                model = ep.cover,
+                                model = ep.cover.asHttps(),
                                 contentDescription = ep.title,
+                                contentScale = ContentScale.Crop,
                                 modifier = Modifier
                                     .size(width = 40.dp, height = 56.dp)
                                     .clip(RoundedCornerShape(8.dp))

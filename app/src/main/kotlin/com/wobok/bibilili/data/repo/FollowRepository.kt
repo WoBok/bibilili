@@ -58,6 +58,33 @@ class FollowRepository(
      */
     fun observeUpdates(): Flow<List<FollowEntity>> = dao.observe(0, 0)
 
+    /**
+     * 追 / 取消追。成功后立刻重拉一次列表，免得首页的「我的收藏」还停在旧状态。
+     * `bili_jct` 缺失时直接报未登录——写操作没有 csrf 一定被服务端拒。
+     */
+    suspend fun setFollowed(seasonId: Long, followed: Boolean): ApiResult<Boolean> {
+        val csrf = credentials.current.value?.biliJct.orEmpty()
+        if (csrf.isBlank()) {
+            return ApiResult.Failure(com.wobok.bibilili.core.bili.error.BiliError.NotLoggedIn)
+        }
+        // 这两个接口把回包放在 `result` 里且字段随时可能变，只认 code，
+        // 走 runApi 的话正文为空会被当成报文异常，明明写成功了却报错。
+        val body = try {
+            if (followed) api.followAdd(seasonId, csrf) else api.followDel(seasonId, csrf)
+        } catch (e: java.io.IOException) {
+            return ApiResult.Failure(com.wobok.bibilili.core.bili.error.BiliError.Network(e))
+        } catch (e: kotlinx.serialization.SerializationException) {
+            return ApiResult.Failure(com.wobok.bibilili.core.bili.error.BiliError.Malformed(e))
+        }
+        if (body.code != 0) {
+            return ApiResult.Failure(
+                com.wobok.bibilili.core.bili.error.BiliError.Api(body.code, body.message)
+            )
+        }
+        runCatching { sync() }
+        return ApiResult.Success(followed)
+    }
+
     suspend fun clear() = dao.clear()
 
     private companion object {
@@ -69,7 +96,7 @@ private fun FollowItemDto.toEntity(type: Int) = FollowEntity(
     seasonId = seasonId,
     type = type,
     title = title,
-    cover = cover,
+    cover = cover.asHttps(),
     seasonTypeName = seasonTypeName,
     newEpIndexShow = newEp?.indexShow.orEmpty(),
     progressText = progress,
